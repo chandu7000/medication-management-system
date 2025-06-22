@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // Create instance with base URL
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5001/api', // Adjust if needed
+  baseURL: 'https://medication-backend-5.onrender.com/api', // Adjust if needed
   headers: {
     'Content-Type': 'application/json',
   },
