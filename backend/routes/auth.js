@@ -11,7 +11,6 @@ router.post('/register', registerValidation, validateRequest, async (req, res) =
   try {
     const { name, email, password, role } = req.body;
 
-    // Check if user already exists
     db.get('SELECT id FROM users WHERE email = ?', [email], async (err, existingUser) => {
       if (err) {
         return res.status(500).json({ message: 'Database error' });
@@ -22,15 +21,13 @@ router.post('/register', registerValidation, validateRequest, async (req, res) =
       }
 
       try {
-        // Hash password
         const saltRounds = 12;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Insert new user
         db.run(
           'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
           [name, email, hashedPassword, role],
-          function(err) {
+          function (err) {
             if (err) {
               console.error('Database error:', err);
               return res.status(500).json({ message: 'Failed to create user' });

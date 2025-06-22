@@ -1,8 +1,22 @@
 import jwt from 'jsonwebtoken';
 import { db } from '../database/init.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+import dotenv from 'dotenv';
 
+dotenv.config(); // Add this
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not defined in the environment');
+}
+
+// Generate JWT token
+export const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '7d' });
+};
+
+// Authenticate JWT token and attach user to request
 export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -16,10 +30,11 @@ export const authenticateToken = (req, res, next) => {
       return res.status(403).json({ message: 'Invalid or expired token' });
     }
 
-    // Verify user still exists in database
+    const userId = decoded.id;
+
     db.get(
       'SELECT id, name, email, role FROM users WHERE id = ?',
-      [decoded.userId],
+      [userId],
       (err, user) => {
         if (err) {
           return res.status(500).json({ message: 'Database error' });
@@ -34,8 +49,4 @@ export const authenticateToken = (req, res, next) => {
       }
     );
   });
-};
-
-export const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 };
